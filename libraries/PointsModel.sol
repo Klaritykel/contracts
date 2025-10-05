@@ -17,12 +17,24 @@ library PointsModel {
         uint256 k
     ) internal pure returns (uint256 points) {
         if (reward == 0 || weeksTau == 0) return 0;
+        
         // z = k * weeksTau (wad)
         uint256 z = k * weeksTau;
+        
         // factor = 1 - e^{-z} (wad)
+        uint256 eTerm = FixedPoint.expNeg1e18(z);
+        
+        // FIXED: Added bounds check for safety
+        require(eTerm <= 1e18, "exp overflow");
+        
         uint256 factor;
-        unchecked { factor = 1e18 - FixedPoint.expNeg1e18(z); } // safe
-        // reward * (Pmax/1e18) * (factor/1e18)
-        return reward * Pmax / 1e18 * factor / 1e18;
+        unchecked { 
+            factor = 1e18 - eTerm;  // Safe due to check above
+        }
+        
+        // FIXED: Better precision - single division at end
+        // Old: reward * Pmax / 1e18 * factor / 1e18
+        // New: (reward * Pmax * factor) / 1e36
+        return (reward * Pmax * factor) / 1e36;
     }
 }

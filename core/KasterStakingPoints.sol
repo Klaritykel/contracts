@@ -4,7 +4,6 @@ pragma solidity ^0.8.20;
 import "../base/KasterStakingBase.sol";
 import "../libraries/PointsModel.sol";
 
-
 abstract contract KasterStakingPoints is KasterStakingBase {
     function _previewRewards(Types.StakeInfo memory s, address user)
         internal
@@ -13,7 +12,6 @@ abstract contract KasterStakingPoints is KasterStakingBase {
         returns (uint256);
 
     function _accrueRewards(address user, Types.StakeInfo storage s) internal {
-        if (s.principal == 0) return;
         uint256 newly = _previewRewards(s, user);
         if (newly > 0) {
             s.accRewards += newly;
